@@ -12,6 +12,8 @@ namespace Joomla\Plugin\Quickicon\ResetMediaVersion\Extension;
 
 \defined('_JEXEC') or die;
 
+use Joomla\CMS\Event\Application\AfterRouteEvent;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Response\JsonResponse;
@@ -47,10 +49,32 @@ class Plugin extends CMSPlugin implements SubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
+            'onAfterRoute'            => 'onAfterRoute',
             'onGetIcons'              => 'getIcons',
             'onAjaxResetmediaversion' => 'resetMediaVersion',
         ];
     }
+
+    /**
+     * Returns a cached page if the current URL exists in the cache.
+     *
+     * @param   AfterRouteEvent  $event  The Joomla event being handled
+     *
+     * @return  void
+     *
+     * @since   4.0.0
+     */
+    public function onAfterRoute(AfterRouteEvent $event): void
+    {
+        //https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Clear-Site-Data#syntax
+        //https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control#no-cache
+
+        if(Factory::getConfig()->get('debug')){
+            header('Cache-Control: no-cache');
+            header('Clear-Site-Data: "cache"');
+        }
+    }
+    
 
     /**
      * This method is called when the Quick Icons module is constructing its set
